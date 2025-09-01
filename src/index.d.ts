@@ -1,6 +1,6 @@
 export interface Delimiters {
-  open: string
-  close: string
+  open?: string
+  close?: string
 }
 
 export type Inputs = string[]

@@ -15,7 +15,11 @@ const defaultDelimiters = {
  */
 export function render(tpl, values, options) {
   const strict = options?.strict ?? true
-  const delimiters = options?.delimiters ?? defaultDelimiters
+
+  const delimiters = {
+    open: options?.delimiters?.open ?? defaultDelimiters.open,
+    close: options?.delimiters?.close ?? defaultDelimiters.close,
+  }
 
   const missingInputValues = []
 
@@ -43,8 +47,11 @@ export function render(tpl, values, options) {
 /**
  * @type {import('./index.d.ts').getInputs}
  */
-export function getInputs(tpl, delimiters = defaultDelimiters) {
-  const inputsRegExp = getInputsRegExp(delimiters)
+export function getInputs(tpl, delimiters) {
+  const inputsRegExp = getInputsRegExp({
+    open: delimiters?.open ?? defaultDelimiters.open,
+    close: delimiters?.close ?? defaultDelimiters.close,
+  })
 
   const inputs = []
 
