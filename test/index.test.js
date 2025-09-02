@@ -1,33 +1,35 @@
+import * as fs from 'node:fs'
+import * as path from 'node:path'
 import { describe, it } from 'node:test'
 import assert from 'node:assert'
-import { getInputs, render } from '../src/index.js'
+import { getInputs, format, read, readSync } from '../src/index.js'
 
-describe('render', () => {
+describe('format', () => {
   it('should replace a single input', () => {
     const tpl = 'Hello, {name}!'
     const values = { name: 'world' }
-    const result = render(tpl, values)
+    const result = format(tpl, values)
     assert.strictEqual(result, 'Hello, world!')
   })
 
   it('should replace multiple inputs', () => {
     const tpl = '{greeting}, {name}!'
     const values = { greeting: 'Hi', name: 'Alice' }
-    const result = render(tpl, values)
+    const result = format(tpl, values)
     assert.strictEqual(result, 'Hi, Alice!')
   })
 
   it('should handle templates with no inputs', () => {
     const tpl = 'Hello, world!'
     const values = { name: 'John' }
-    const result = render(tpl, values)
+    const result = format(tpl, values)
     assert.strictEqual(result, 'Hello, world!')
   })
 
   it('should ignore extra values', () => {
     const tpl = 'Hello, {name}!'
     const values = { name: 'world', age: 30 }
-    const result = render(tpl, values)
+    const result = format(tpl, values)
     assert.strictEqual(result, 'Hello, world!')
   })
 
@@ -35,7 +37,7 @@ describe('render', () => {
     const tpl = 'Hello, {name}!'
     const values = {}
     const options = { strict: false }
-    const result = render(tpl, values, options)
+    const result = format(tpl, values, options)
     assert.strictEqual(result, 'Hello, !')
   })
 
@@ -44,7 +46,7 @@ describe('render', () => {
     const values = {}
     const options = { strict: true }
     assert.throws(
-      () => render(tpl, values, options),
+      () => format(tpl, values, options),
       new Error("Missing input values for: 'name'"),
     )
   })
@@ -53,7 +55,7 @@ describe('render', () => {
     const tpl = 'Hello, {name}!'
     const values = { name: 'world' }
     const options = { strict: true }
-    const result = render(tpl, values, options)
+    const result = format(tpl, values, options)
     assert.strictEqual(result, 'Hello, world!')
   })
 
@@ -61,7 +63,7 @@ describe('render', () => {
     const tpl = '[[greeting]], [[name]]!'
     const values = { greeting: 'Yo', name: 'Bob' }
     const options = { delimiters: { open: '[[', close: ']]' } }
-    const result = render(tpl, values, options)
+    const result = format(tpl, values, options)
     assert.strictEqual(result, 'Yo, Bob!')
   })
 
@@ -69,14 +71,14 @@ describe('render', () => {
     const tpl = '$[greeting], $[name]!'
     const values = { greeting: 'Hey', name: 'Charlie' }
     const options = { delimiters: { open: '$[', close: ']' } }
-    const result = render(tpl, values, options)
+    const result = format(tpl, values, options)
     assert.strictEqual(result, 'Hey, Charlie!')
   })
 
   it('should handle whitespace around inputs', () => {
     const tpl = 'Hello, {  name  }!'
     const values = { name: 'world' }
-    const result = render(tpl, values)
+    const result = format(tpl, values)
     assert.strictEqual(result, 'Hello, world!')
   })
 })
@@ -124,5 +126,72 @@ describe('getInputs', () => {
     const tpl = 'Hello, {  name  }!'
     const result = getInputs(tpl)
     assert.deepStrictEqual(result, ['name'])
+  })
+})
+
+describe('read and readSync', () => {
+  const templateDir = path.resolve(process.cwd(), 'test', 'templates')
+
+  if (!fs.existsSync(templateDir)) {
+    fs.mkdirSync(templateDir, { recursive: true })
+  }
+
+  it('should read a template file and extract inputs', async () => {
+    const templateFilePath = path.join(templateDir, 'simple.md')
+
+    const template = await read(templateFilePath)
+    assert.strictEqual(template.content, 'Hello, {name}!')
+    assert.deepStrictEqual(template.inputs, ['name'])
+    assert.deepStrictEqual(template.options, {})
+
+    const templateSync = readSync(templateFilePath)
+    assert.strictEqual(templateSync.content, 'Hello, {name}!')
+    assert.deepStrictEqual(templateSync.inputs, ['name'])
+    assert.deepStrictEqual(templateSync.options, {})
+  })
+
+  it('should parse front matter options', async () => {
+    const templateFilePath = path.join(templateDir, 'front-matter.md')
+    const template = await read(templateFilePath)
+    assert.strictEqual(template.content, 'Hello, <<name>>!')
+    assert.deepStrictEqual(template.inputs, ['name'])
+    assert.deepStrictEqual(template.options, {
+      delimiters: { open: '<<', close: '>>' },
+      strict: false,
+    })
+
+    const templateSync = readSync(templateFilePath)
+    assert.strictEqual(templateSync.content, 'Hello, <<name>>!')
+    assert.deepStrictEqual(templateSync.inputs, ['name'])
+    assert.deepStrictEqual(templateSync.options, {
+      delimiters: { open: '<<', close: '>>' },
+      strict: false,
+    })
+  })
+
+  it('should override front matter options with provided options', async () => {
+    const templateFilePath = path.join(templateDir, 'override.md')
+    const template = await read(templateFilePath, {
+      strict: false,
+      delimiters: { open: '{{', close: '}}' },
+    })
+
+    assert.strictEqual(template.content, 'Hello, <<name>> and {{other}}!')
+    assert.deepStrictEqual(template.inputs, ['other'])
+    assert.deepStrictEqual(template.options, {
+      delimiters: { open: '{{', close: '}}' },
+      strict: false,
+    })
+
+    const templateSync = readSync(templateFilePath, {
+      strict: false,
+      delimiters: { open: '{{', close: '}}' },
+    })
+    assert.strictEqual(templateSync.content, 'Hello, <<name>> and {{other}}!')
+    assert.deepStrictEqual(templateSync.inputs, ['other'])
+    assert.deepStrictEqual(templateSync.options, {
+      delimiters: { open: '{{', close: '}}' },
+      strict: false,
+    })
   })
 })

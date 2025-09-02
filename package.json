@@ -1,7 +1,7 @@
 {
   "name": "tplx",
-  "version": "0.0.2",
-  "description": "A lightweight tool for inspecting and rendering templates.",
+  "version": "0.0.3",
+  "description": "A lightweight tool for inspecting and formatting templates",
   "type": "module",
   "main": "src/index.js",
   "types": "src/index.d.ts",
@@ -10,5 +10,8 @@
   ],
   "scripts": {
     "test": "node --test test/index.test.js"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3"
   }
 }

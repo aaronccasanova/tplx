@@ -1,19 +1,18 @@
 #!/usr/bin/env node
-import * as fs from 'node:fs'
 import * as path from 'node:path'
 import * as util from 'node:util'
-import { render, getInputs } from '../src/index.js'
+import * as tplx from '../src/index.js'
 
 const { command, templateFileName, primaryArgs, secondaryArgs } = getArgs()
 
 if (command === 'inspect') {
-  const options = getOptions(primaryArgs)
+  const template = await tplx.read(templateFileName)
 
-  const tpl = await getTpl(templateFileName)
+  const cliOptions = getOptions(primaryArgs)
 
-  const inputs = getInputs(tpl, options.delimiters)
+  const options = { ...template.options, ...cliOptions }
 
-  if (!inputs.length) {
+  if (!template.inputs.length) {
     console.log('No inputs required for this template.')
     process.exit(0)
   }
@@ -26,21 +25,27 @@ if (command === 'inspect') {
   const output = `
 Options:
 
-  --strict            Error on missing input values (default: true)
-  --open-delimiter    Customize open delimiter (default: '{')
-  --close-delimiter   Customize close delimiter (default: '}')
+  --strict            Error on missing input values (default: ${
+    options.strict ?? true
+  })
+  --open-delimiter    Customize open delimiter (default: '${
+    options.delimiters?.open ?? '{'
+  }')
+  --close-delimiter   Customize close delimiter (default: '${
+    options.delimiters?.close ?? '}'
+  }')
 
 Inputs:
 
-${inputs.map((input) => `  --${input} <${input}>`).join('\n')}
+${template.inputs.map((input) => `  --${input} <${input}>`).join('\n')}
 
 Example:
 
 npx tplx format ${templateFileNameFromCWD} [options...] -- \\
-${inputs
+${template.inputs
   .map(
     (input, i) =>
-      `  --${input} <${input}>${i === inputs.length - 1 ? '' : ' \\'}`,
+      `  --${input} <${input}>${i === template.inputs.length - 1 ? '' : ' \\'}`,
   )
   .join('\n')}
   `.trim()
@@ -50,21 +55,21 @@ ${inputs
 }
 
 if (command === 'format') {
-  const options = getOptions(primaryArgs)
+  const cliOptions = getOptions(primaryArgs)
 
-  const tpl = await getTpl(templateFileName)
+  const template = await tplx.read(templateFileName, cliOptions)
 
-  const inputs = getInputs(tpl, options.delimiters)
+  const options = { ...template.options, ...cliOptions }
 
-  if (!inputs.length) {
-    console.log(tpl)
+  if (!template.inputs.length) {
+    console.log(template.content)
     process.exit(0)
   }
 
-  const values = getValues(secondaryArgs, inputs)
+  const values = getValues(secondaryArgs, template.inputs)
 
   try {
-    console.log(render(tpl, values, options))
+    console.log(tplx.format(template.content, values, options))
 
     process.exit(0)
   } catch (error) {
@@ -116,24 +121,27 @@ function getOptions(args) {
     },
   })
 
-  return {
-    strict: optionArgs.values.strict ?? false,
-    delimiters: {
-      open: optionArgs.values['open-delimiter'] ?? '{',
-      close: optionArgs.values['close-delimiter'] ?? '}',
-    },
+  const options = {}
+
+  if (typeof optionArgs.values.strict === 'boolean') {
+    options.strict = optionArgs.values.strict
   }
-}
 
-function getTpl(templateFileName) {
-  return fs.promises
-    .readFile(path.resolve(templateFileName), 'utf8')
-    .catch((error) => {
-      console.error('Error reading template file:')
-      console.error(error.message)
+  const delimiters = {}
 
-      process.exit(1)
-    })
+  if (optionArgs.values['open-delimiter']) {
+    delimiters.open = optionArgs.values['open-delimiter']
+  }
+
+  if (optionArgs.values['close-delimiter']) {
+    delimiters.close = optionArgs.values['close-delimiter']
+  }
+
+  if (Object.keys(delimiters).length) {
+    options.delimiters = delimiters
+  }
+
+  return options
 }
 
 function getValues(args, inputs) {

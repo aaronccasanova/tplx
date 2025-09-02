@@ -1,19 +1,20 @@
+import * as fs from 'node:fs'
+
+import matter from 'gray-matter'
+
 /**
  * @typedef {import('./index.d.ts').Delimiters} Delimiters
  */
 
-/**
- * @type {Delimiters}
- */
 const defaultDelimiters = {
   open: '{',
   close: '}',
 }
 
 /**
- * @type {import('./index.d.ts').render}
+ * @type {import('./index.d.ts').format}
  */
-export function render(tpl, values, options) {
+export function format(tpl, values, options) {
   const strict = options?.strict ?? true
 
   const delimiters = {
@@ -25,7 +26,7 @@ export function render(tpl, values, options) {
 
   const inputsRegExp = getInputsRegExp(delimiters)
 
-  const rendered = tpl.replace(inputsRegExp, (_match, input) => {
+  const formatted = tpl.replace(inputsRegExp, (_match, input) => {
     if (Object.prototype.hasOwnProperty.call(values, input) && values[input]) {
       return values[input]
     }
@@ -41,7 +42,7 @@ export function render(tpl, values, options) {
     )
   }
 
-  return rendered
+  return formatted
 }
 
 /**
@@ -70,9 +71,9 @@ export function getInputs(tpl, delimiters) {
  */
 function getInputsRegExp(delimiters) {
   return new RegExp(
-    escapeDelimiter(delimiters.open) +
+    escapeDelimiter(delimiters?.open ?? defaultDelimiters.open) +
       String.raw`\s*([^\s]+?)\s*` +
-      escapeDelimiter(delimiters.close),
+      escapeDelimiter(delimiters?.close ?? defaultDelimiters.close),
     'g',
   )
 }
@@ -83,4 +84,69 @@ function getInputsRegExp(delimiters) {
  */
 function escapeDelimiter(delimiter) {
   return delimiter.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&')
+}
+
+/**
+ * @type {import('./index.d.ts').read}
+ */
+export async function read(templateFileName, options) {
+  const templateFileContent = await fs.promises.readFile(
+    templateFileName,
+    'utf8',
+  )
+
+  const { content, data } = matter(templateFileContent)
+
+  const templateFileOptions = data.tplx || {}
+
+  const mergedOptions = {
+    ...templateFileOptions,
+    ...options,
+  }
+
+  if (templateFileOptions.delimiters || options?.delimiters) {
+    mergedOptions.delimiters = {
+      ...templateFileOptions.delimiters,
+      ...options?.delimiters,
+    }
+  }
+
+  const inputs = getInputs(content, mergedOptions.delimiters)
+
+  return {
+    content,
+    inputs,
+    options: mergedOptions,
+  }
+}
+
+/**
+ * @type {import('./index.d.ts').readSync}
+ */
+export function readSync(templateFileName, options) {
+  const templateFileContent = fs.readFileSync(templateFileName, 'utf8')
+
+  const { content, data } = matter(templateFileContent)
+
+  const templateFileOptions = data.tplx || {}
+
+  const mergedOptions = {
+    ...templateFileOptions,
+    ...options,
+  }
+
+  if (templateFileOptions.delimiters || options?.delimiters) {
+    mergedOptions.delimiters = {
+      ...templateFileOptions.delimiters,
+      ...options?.delimiters,
+    }
+  }
+
+  const inputs = getInputs(content, mergedOptions.delimiters)
+
+  return {
+    content,
+    inputs,
+    options: mergedOptions,
+  }
 }
