@@ -22,6 +22,9 @@ export function format(tpl, values, options) {
     close: options?.delimiters?.close ?? defaultDelimiters.close,
   }
 
+  /**
+   * @type {string[]}
+   */
   const missingInputValues = []
 
   const inputsRegExp = getInputsRegExp(delimiters)
