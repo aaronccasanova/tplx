@@ -1,0 +1,21 @@
+{
+  "name": "tplx",
+  "version": "0.0.5",
+  "description": "A lightweight tool for inspecting and formatting templates",
+  "type": "module",
+  "bin": "bin/index.js",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "echo \"Tests are in @tplx/core\""
+  },
+  "dependencies": {
+    "@tplx/core": "workspace:^"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

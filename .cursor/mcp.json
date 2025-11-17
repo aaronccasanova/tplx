@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "prompts": {
+      "command": "node",
+      "args": [
+        "packages/mcp/bin/index.js",
+        "--cwd",
+        "examples",
+        "--template",
+        "*.md"
+      ]
+    }
+  }
+}

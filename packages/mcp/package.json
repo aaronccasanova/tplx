@@ -1,0 +1,22 @@
+{
+  "name": "@tplx/mcp",
+  "version": "0.0.5",
+  "description": "MCP server that automatically exposes tplx templates as MCP prompts",
+  "type": "module",
+  "bin": "bin/index.js",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.22.0",
+    "@tplx/core": "workspace:^",
+    "globby": "^15.0.0",
+    "p-limit": "^7.2.0",
+    "zod": "^3.24.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 import * as path from 'node:path'
 import * as util from 'node:util'
-import * as tplx from '../src/index.js'
+
+import * as tplx from '@tplx/core'
 
 const { command, templateFileName, primaryArgs, secondaryArgs } = getArgs()
 
@@ -23,6 +24,8 @@ if (command === 'inspect') {
   )
 
   const output = `
+${options.title ? `Title: ${options.title}\n` : ''}
+${options.description ? `Description: ${options.description}\n` : ''}
 Options:
 
   --strict            Error on missing input values (default: ${
@@ -73,7 +76,7 @@ if (command === 'format') {
 
     process.exit(0)
   } catch (error) {
-    console.error(`Error: ${error.message}, received values:`)
+    console.error(`Error: ${error instanceof Error ? error : String(error)}`)
     console.error(JSON.stringify(values, null, 2))
 
     process.exit(1)
@@ -111,6 +114,9 @@ function getArgs() {
   }
 }
 
+/**
+ * @param {string[]} args
+ */
 function getOptions(args) {
   const optionArgs = util.parseArgs({
     args,
@@ -144,6 +150,10 @@ function getOptions(args) {
   return options
 }
 
+/**
+ * @param {string[]} args
+ * @param {string[]} inputs
+ */
 function getValues(args, inputs) {
   return util.parseArgs({
     args,

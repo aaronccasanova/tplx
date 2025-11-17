@@ -2,106 +2,70 @@
 
 A lightweight tool for inspecting and formatting templates.
 
+## Packages
+
+This monorepo contains the following packages under the `@tplx` organization:
+
+### [`tplx`](./packages/tplx)
+
+Command-line interface and JavaScript SDK for inspecting and formatting templates. This is the main package most users will interact with.
+
+- `inspect` command to see required template inputs
+- `format` command to render templates with values
+- Full JavaScript SDK (re-exports all functionality from [`@tplx/core`](./packages/core))
+
+```bash
+npx tplx inspect template.md
+npx tplx format template.md -- --name "World"
+```
+
+### [`@tplx/core`](./packages/core)
+
+Core template parsing and formatting logic. This package provides the fundamental functionality for working with tplx templates programmatically.
+
+- Parse templates with customizable delimiters
+- Extract input placeholders from templates
+- Format templates with provided values
+- Read template files with front matter support
+
+```bash
+npm i @tplx/core
+```
+
+### [`@tplx/mcp`](./packages/mcp)
+
+MCP server that automatically exposes `tplx` templates as MCP prompts.
+
+- Automatic template discovery from glob patterns
+- Dynamic prompt generation with extracted arguments
+- Lazy loading for optimal memory usage
+- CLI and JavaScript API
+
+```bash
+npx @tplx/mcp --template 'templates/**/*.md'
+```
+
+## Quick Start
+
+```bash
+# Create a template file
+echo "Hello, {name}!" > greeting.md
+
+# Inspect the template
+npx tplx inspect greeting.md
+
+# Format the template
+npx tplx format greeting.md -- --name "World"
+```
+
 ## Features
 
-- Inspect templates to see required inputs.
-- Format templates with provided values.
-- Support for custom delimiters.
-- Strict mode to error on missing values.
-- Front matter support for template-specific configuration.
-
-## Usage
-
-`tplx` offers two primary commands: `inspect` and `format`.
-
-### `inspect`
-
-Use the `inspect` command to identify the required input values for a template file.
-
-```bash
-npx tplx inspect <template-file> [options]
-```
-
-This will output the necessary inputs and provide an example `format` command.
-
-**Example:**
-
-Given a template file `greeting.md`:
-
-```markdown
-Hello, {name}! Welcome to {location}.
-```
-
-Running `tplx inspect greeting.md` will produce:
-
-```
-Options:
-
-  --strict            Error on missing input values (default: true)
-  --open-delimiter    Customize open delimiter (default: '{')
-  --close-delimiter   Customize close delimiter (default: '}')
-
-Inputs:
-
-  --name <name>
-  --location <location>
-
-Example:
-
-npx tplx format greeting.md [options...] -- \
-  --name <name> \
-  --location <location>
-```
-
-### `format`
-
-Use the `format` command to format a template with the specified input values.
-
-```bash
-npx tplx format <template-file> [options...] -- --<input> <value>
-```
-
-**Example:**
-
-To format the `greeting.md` template:
-
-```bash
-npx tplx format greeting.md -- --name "World" --location "tplx"
-```
-
-This will output:
-
-```
-Hello, World! Welcome to tplx.
-```
-
-## Options
-
-Options can be provided to both `inspect` and `format` commands:
-
-- `--strict`: A boolean that when `true` will cause the command to exit with an error if any input values are missing. Defaults to `true`.
-- `--open-delimiter <string>`: Customize the open delimiter. Defaults to `{`.
-- `--close-delimiter <string>`: Customize the close delimiter. Defaults to `}`.
-
-**Example with custom delimiters:**
-
-Given a template `custom.md`:
-
-```
-%%% name @@@
-```
-
-You can use the delimiter options to format it:
-
-```bash
-npx tplx format custom.md --open-delimiter '%%%' --close-delimiter '@@@' -- --name "Custom"
-```
-
-This will output:
-
-```
-Custom
-```
+- 📝 **Simple Syntax**: Use `{placeholder}` syntax by default
+- 🔧 **Customizable Delimiters**: Support for custom delimiter patterns
+- ✅ **Strict Mode**: Optionally error on missing values
+- 📄 **Front Matter**: Configure templates with YAML front matter
+- 🔌 **Programmatic API**: Use as a library in your Node.js projects
+- 🤖 **MCP Integration**: Expose templates as MCP prompts
 
 ## Front Matter
 
@@ -138,11 +102,11 @@ Hello, Front Matter!
 
 `tplx` can also be used as a module.
 
-### `format(tpl, values, options)`
+### `format(templateContent, values, options)`
 
 Formats a template string with the given values.
 
-### `getInputs(tpl, delimiters)`
+### `getInputs(templateContent, delimiters)`
 
 Extracts input keys from a template string.
 

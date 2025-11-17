@@ -1,18 +1,10 @@
 {
-  "name": "tplx",
-  "version": "0.0.4",
-  "description": "A lightweight tool for inspecting and formatting templates",
+  "name": "@tplx/root",
+  "private": true,
+  "description": "Monorepo for tplx packages",
   "type": "module",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
-  "bin": "bin/tplx.js",
-  "files": [
-    "src"
-  ],
   "scripts": {
-    "test": "node --test test/index.test.js"
-  },
-  "dependencies": {
-    "gray-matter": "^4.0.3"
+    "tplx": "node packages/tplx/bin/index.js",
+    "test": "pnpm -r test"
   }
 }

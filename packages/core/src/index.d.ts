@@ -4,13 +4,15 @@ export interface Delimiters {
 }
 
 export interface Options {
+  title?: string
+  description?: string
   strict?: boolean
   delimiters?: Delimiters
 }
 
 export type Inputs = string[]
 
-export type Values = {
+export interface Values {
   [input: string]: any
 }
 
@@ -21,12 +23,15 @@ export interface Template {
 }
 
 export declare function format(
-  tpl: string,
+  templateContent: string,
   values: Values,
   options?: Options,
 ): string
 
-export declare function getInputs(tpl: string, delimiters?: Delimiters): Inputs
+export declare function getInputs(
+  templateContent: string,
+  delimiters?: Delimiters,
+): Inputs
 
 export declare function read(
   templateFileName: string,

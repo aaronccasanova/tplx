@@ -1,0 +1,20 @@
+{
+  "name": "@tplx/core",
+  "version": "0.0.5",
+  "description": "Core template parsing and formatting logic for tplx",
+  "type": "module",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test test/index.test.js"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
