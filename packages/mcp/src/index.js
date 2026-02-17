@@ -2,7 +2,6 @@ import * as path from 'node:path'
 import * as os from 'node:os'
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
-import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { globby } from 'globby'
 import { z } from 'zod'
 import pLimit from 'p-limit'
@@ -11,6 +10,9 @@ import * as tplx from '@tplx/core'
 
 /**
  * Create and configure an MCP server for tplx templates
+ *
+ * The returned server is not connected to any transport. Call
+ * `server.connect(transport)` with the transport of your choice.
  *
  * @param {import('./index.d.ts').CreateTplxMCPServerOptions} options
  * @returns {Promise<import('@modelcontextprotocol/sdk/server/mcp.js').McpServer>}
@@ -52,10 +54,6 @@ export async function createTplxMCPServer(options) {
       )
     }),
   )
-
-  const transport = new StdioServerTransport()
-
-  await mcpServer.connect(transport)
 
   return mcpServer
 }

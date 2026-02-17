@@ -41,17 +41,24 @@ export interface CreateTplxMCPServerOptions {
  * 3. Register each template as an MCP prompt
  * 4. Lazily load and format templates when prompts are executed
  *
+ * The returned MCP server is not connected to any transport. Call
+ * `mcpServer.connect(transport)` with the transport of your choice
+ * (e.g. StdioServerTransport, StreamableHTTPServerTransport).
+ *
  * @param options - Configuration options for the MCP server
- * @returns Promise resolving to the configured MCP server
+ * @returns Promise resolving to the configured (but unconnected) MCP server
  *
  * @example
  * ```js
  * import { createTplxMCPServer } from '@tplx/mcp'
+ * import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
  *
- * await createTplxMCPServer({
+ * const mcpServer = await createTplxMCPServer({
  *   templates: ['templates/*.md'],
  *   cwd: import.meta.dirname,
  * })
+ *
+ * await mcpServer.connect(new StdioServerTransport())
  * ```
  */
 export declare function createTplxMCPServer(

@@ -8,12 +8,15 @@
  * You can point your MCP config to this script file instead of using
  * the CLI directly.
  */
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { createTplxMCPServer } from '../packages/mcp/src/index.js'
 
 // Start the server with templates relative to this file
-await createTplxMCPServer({
+const mcpServer = await createTplxMCPServer({
   name: 'example-tplx-mcp-server',
   version: '0.0.0',
   cwd: import.meta.dirname,
   templates: ['*.md'],
 })
+
+await mcpServer.connect(new StdioServerTransport())

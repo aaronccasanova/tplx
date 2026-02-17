@@ -2,6 +2,8 @@
 import * as path from 'node:path'
 import * as util from 'node:util'
 
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+
 import { createTplxMCPServer } from '../src/index.js'
 
 const args = util.parseArgs({
@@ -62,10 +64,12 @@ JavaScript API:
 }
 
 try {
-  await createTplxMCPServer({
+  const mcpServer = await createTplxMCPServer({
     templates,
     cwd,
   })
+
+  await mcpServer.connect(new StdioServerTransport())
 } catch (error) {
   console.error('Error starting Tplx MCP server:', error)
 

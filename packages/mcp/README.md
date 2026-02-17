@@ -39,11 +39,14 @@ For guaranteed relative path resolution, create a local script:
 
 ```javascript
 import { createTplxMCPServer } from '@tplx/mcp'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 
-await createTplxMCPServer({
+const mcpServer = await createTplxMCPServer({
   cwd: import.meta.dirname,
   templates: ['templates/**/*.md'],
 })
+
+await mcpServer.connect(new StdioServerTransport())
 ```
 
 **MCP Config:**
@@ -60,6 +63,8 @@ await createTplxMCPServer({
 ```
 
 **Why use a script?** When MCP servers are started, there's no guarantee what the current working directory will be. By using a local script, you can use absolute paths or paths relative to your script file, ensuring templates are always found correctly.
+
+**Transport flexibility:** `createTplxMCPServer` returns an unconnected `McpServer`. You can connect any MCP transport — `StdioServerTransport` for CLI-based servers, `StreamableHTTPServerTransport` for HTTP servers, etc.
 
 > See [JavaScript API](#javascript-api) below for more configuration examples and options.
 
@@ -160,7 +165,6 @@ The MCP server automatically extracts template placeholders and registers them a
 ## How It Works
 
 1. **Registration Phase**: When the server starts, it:
-
    - Globs all template files matching the provided patterns
    - Reads each template using `tplx.read()` to extract inputs and metadata
    - Registers each template as an MCP prompt with appropriate arguments
