@@ -18,18 +18,31 @@ import * as tplx from '@tplx/core'
  * @returns {Promise<import('@modelcontextprotocol/sdk/server/mcp.js').McpServer>}
  */
 export async function createTplxMCPServer(options) {
-  const {
-    name = 'tplx-mcp-server',
-    version = '0.0.0',
-    cwd = process.cwd(),
-    templates,
-    concurrency = os.cpus().length,
-  } = options
+  const { name = 'tplx-mcp-server', version = '0.0.0', ...rest } = options
 
   const mcpServer = new McpServer({
     name,
     version,
   })
+
+  await registerTplxMCPPrompts(mcpServer, rest)
+
+  return mcpServer
+}
+
+/**
+ * Register tplx templates as MCP prompts on an existing MCP server
+ *
+ * @param {import('@modelcontextprotocol/sdk/server/mcp.js').McpServer} mcpServer
+ * @param {import('./index.d.ts').RegisterTplxMCPPromptsOptions} options
+ * @returns {Promise<void>}
+ */
+export async function registerTplxMCPPrompts(mcpServer, options) {
+  const {
+    cwd = process.cwd(),
+    templates,
+    concurrency = os.cpus().length,
+  } = options
 
   const templateFilePaths = await globby(templates, {
     cwd,
@@ -54,8 +67,6 @@ export async function createTplxMCPServer(options) {
       )
     }),
   )
-
-  return mcpServer
 }
 
 /**

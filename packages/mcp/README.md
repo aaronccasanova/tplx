@@ -70,9 +70,13 @@ await mcpServer.connect(new StdioServerTransport())
 
 ### JavaScript API
 
+#### `createTplxMCPServer(options)`
+
+Creates a new `McpServer` with `tplx` templates registered as prompts. Returns an unconnected server — you choose the transport.
+
 ```typescript
 interface CreateTplxMCPServerOptions {
-  /** Name of the MCP server (default: 'tplx-server') */
+  /** Name of the MCP server (default: 'tplx-mcp-server') */
   name?: string
 
   /** Version of the MCP server (default: '0.0.0') */
@@ -83,7 +87,48 @@ interface CreateTplxMCPServerOptions {
 
   /** Array of template file paths or glob patterns */
   templates: string[]
+
+  /** Concurrency limit for loading templates (default: os.cpus().length) */
+  concurrency?: number
 }
+```
+
+#### `registerTplxMCPPrompts(mcpServer, options)`
+
+Registers `tplx` templates as prompts on an **existing** `McpServer`. Use this when you want to add `tplx` prompts alongside your own tools or prompts.
+
+```typescript
+interface RegisterTplxMCPPromptsOptions {
+  /** Current working directory for resolving glob patterns (default: process.cwd()) */
+  cwd?: string
+
+  /** Array of template file paths or glob patterns */
+  templates: string[]
+
+  /** Concurrency limit for loading templates (default: os.cpus().length) */
+  concurrency?: number
+}
+```
+
+**Example — extending an existing server:**
+
+```javascript
+import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
+import { registerTplxMCPPrompts } from '@tplx/mcp'
+
+const mcpServer = new McpServer({ name: 'my-server', version: '1.0.0' })
+
+// Register tplx template prompts
+await registerTplxMCPPrompts(mcpServer, {
+  cwd: import.meta.dirname,
+  templates: ['templates/*.md'],
+})
+
+// Register your own tools, prompts, etc.
+// mcpServer.registerTool(...)
+
+await mcpServer.connect(new StdioServerTransport())
 ```
 
 ### CLI Reference

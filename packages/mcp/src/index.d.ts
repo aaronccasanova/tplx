@@ -1,18 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 
-export interface CreateTplxMCPServerOptions {
-  /**
-   * Name of the MCP server
-   * @default 'tplx-mcp-server'
-   */
-  name?: string
-
-  /**
-   * Version of the MCP server
-   * @default '0.0.0'
-   */
-  version?: string
-
+export interface RegisterTplxMCPPromptsOptions {
   /**
    * Current working directory for resolving glob patterns
    * @default process.cwd()
@@ -30,6 +18,20 @@ export interface CreateTplxMCPServerOptions {
    * @default os.cpus().length
    */
   concurrency?: number
+}
+
+export interface CreateTplxMCPServerOptions extends RegisterTplxMCPPromptsOptions {
+  /**
+   * Name of the MCP server
+   * @default 'tplx-mcp-server'
+   */
+  name?: string
+
+  /**
+   * Version of the MCP server
+   * @default '0.0.0'
+   */
+  version?: string
 }
 
 /**
@@ -64,3 +66,33 @@ export interface CreateTplxMCPServerOptions {
 export declare function createTplxMCPServer(
   options: CreateTplxMCPServerOptions,
 ): Promise<McpServer>
+
+/**
+ * Register tplx templates as MCP prompts on an existing MCP server
+ *
+ * Use this when you already have an `McpServer` instance and want to
+ * add tplx template prompts to it alongside other tools or prompts.
+ *
+ * @param mcpServer - An existing MCP server instance
+ * @param options - Configuration options for template discovery
+ *
+ * @example
+ * ```js
+ * import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
+ * import { registerTplxMCPPrompts } from '@tplx/mcp'
+ *
+ * const mcpServer = new McpServer({ name: 'my-server', version: '1.0.0' })
+ *
+ * await registerTplxMCPPrompts(mcpServer, {
+ *   cwd: import.meta.dirname,
+ *   templates: ['templates/*.md'],
+ * })
+ *
+ * // Register additional tools, prompts, etc.
+ * // Then connect a transport of your choice.
+ * ```
+ */
+export declare function registerTplxMCPPrompts(
+  mcpServer: McpServer,
+  options: RegisterTplxMCPPromptsOptions,
+): Promise<void>
