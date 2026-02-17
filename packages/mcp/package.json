@@ -1,6 +1,6 @@
 {
   "name": "@tplx/mcp",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "MCP server that automatically exposes tplx templates as MCP prompts",
   "type": "module",
   "bin": "bin/index.js",
