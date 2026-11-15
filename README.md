@@ -47,12 +47,12 @@ npx @tplx/mcp --template 'templates/**/*.md'
 
 ### [`@tplx/content-mapper`](./packages/content-mapper)
 
-Experimental TypeScript 7.1 integration for imported `.tplx` templates. Each template exports a `format(values)` function whose input names come directly from its contents and frontmatter. A Node loading hook supplies the runtime import behavior.
+Experimental TypeScript 7.1 integration for imported `.tplx` templates. Each template has a default export with a `format(values)` method whose input names come directly from its contents and frontmatter. A Node loading hook supplies the runtime import behavior.
 
 ```ts
-import { format as formatCodeReview } from './code-review.tplx'
+import codeReviewTemplate from './code-review.tplx'
 
-const formattedCodeReview = formatCodeReview({
+const formattedCodeReview = codeReviewTemplate.format({
   language: 'JavaScript',
   code: 'const greeting = "Hello"',
 })

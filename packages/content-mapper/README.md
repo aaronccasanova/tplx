@@ -1,6 +1,6 @@
 # @tplx/content-mapper
 
-Import a TPLX template and get input-name checking from its contents. The imported module exports `format(values)`, with required properties inferred from the same placeholder extraction used by TPLX at runtime. There is no separate interface to maintain.
+Import a TPLX template and get input-name checking from its contents. The default export is a template object. Its `format(values)` method infers required properties through the same placeholder extraction used by TPLX at runtime. There is no separate interface to maintain.
 
 This integration is experimental and tested with TypeScript `7.1.0-beta` and Node.js 22.23.2. It requires Node.js 22.18 or newer. TypeScript 6 and 7.0 do not support content mappers.
 
@@ -54,9 +54,9 @@ Hello, <<name>>! Summarize <<topic>>.
 Import it in an ESM project (`"type": "module"` in `package.json`):
 
 ```ts
-import { format as formatGreeting } from './greeting.tplx'
+import greetingTemplate from './greeting.tplx'
 
-const formattedGreeting = formatGreeting({
+const formattedGreeting = greetingTemplate.format({
   name: 'Aaron',
   topic: 'content mappers',
 })
@@ -83,7 +83,7 @@ The Node command uses native TypeScript stripping. For projects requiring TypeSc
 
 The current renderer considers falsy values such as `''`, `0`, and `false` missing. Strict templates throw for them, and non-strict templates replace them with an empty string. This integration preserves that existing behavior. Input-name checking does not guarantee that a particular value renders successfully.
 
-The imported formatter binds the template's content and options. It does not accept delimiter or strictness overrides that could change its inferred inputs. The existing `format`, `read`, and `readSync` APIs remain available for dynamic templates and options. A string passed to `read(path)` is not a statically imported module and does not acquire inferred names from this mapper.
+The imported template's `format` method binds its content and options. It does not accept delimiter or strictness overrides that could change its inferred inputs. The existing `format`, `read`, and `readSync` APIs remain available for dynamic templates and options. A string passed to `read(path)` is not a statically imported module and does not acquire inferred names from this mapper.
 
 ## Editor support and boundaries
 

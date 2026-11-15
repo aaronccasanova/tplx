@@ -1,6 +1,6 @@
-import { format as formatCodeReview } from './code-review.tplx'
+import codeReviewTemplate from './code-review.tplx'
 
-const formattedCodeReview = formatCodeReview({
+const formattedCodeReview = codeReviewTemplate.format({
   language: 'JavaScript',
   code: 'const greeting = "Hello, world!"',
 })

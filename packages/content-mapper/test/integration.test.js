@@ -16,8 +16,8 @@ test.test('checks required names and misspellings without constraining values', 
   const projectDirPath = await createProject(testContext, {
     'greeting.tplx': 'Hello, {name}! {count} {name}',
     'index.ts': `
-import { format } from './greeting.tplx'
-const formatted: string = format({ name: { nested: true }, count: 42 })
+import greetingTemplate from './greeting.tplx'
+const formatted: string = greetingTemplate.format({ name: { nested: true }, count: 42 })
 `,
   })
 
@@ -25,17 +25,24 @@ const formatted: string = format({ name: { nested: true }, count: 42 })
 
   await fs.writeFile(
     path.join(projectDirPath, 'index.ts'),
-    "import { format } from './greeting.tplx'\nformat({ name: 'Aaron' })\n",
+    "import greetingTemplate from './greeting.tplx'\ngreetingTemplate.format({ name: 'Aaron' })\n",
   )
 
   assertCompilerFailure(projectDirPath, /count.*missing|missing.*count/s)
 
   await fs.writeFile(
     path.join(projectDirPath, 'index.ts'),
-    "import { format } from './greeting.tplx'\nformat({ nmae: 'Aaron', count: 1 })\n",
+    "import greetingTemplate from './greeting.tplx'\ngreetingTemplate.format({ nmae: 'Aaron', count: 1 })\n",
   )
 
   assertCompilerFailure(projectDirPath, /nmae/)
+
+  await fs.writeFile(
+    path.join(projectDirPath, 'index.ts'),
+    "import { format } from './greeting.tplx'\n",
+  )
+
+  assertCompilerFailure(projectDirPath, /no exported member.*format/i)
 })
 
 test.test('reuses frontmatter delimiters, flat keys, and explicit non-strict behavior', async (testContext) => {
@@ -47,9 +54,9 @@ tplx:
 ---
 <<user.name>> {ignored} <<user.name>>`,
     'index.ts': `
-import { format } from './greeting.tplx'
-format({})
-format({ 'user.name': false })
+import greetingTemplate from './greeting.tplx'
+greetingTemplate.format({})
+greetingTemplate.format({ 'user.name': false })
 `,
   })
 
@@ -57,7 +64,7 @@ format({ 'user.name': false })
 
   await fs.writeFile(
     path.join(projectDirPath, 'index.ts'),
-    "import { format } from './greeting.tplx'\nformat({ ignored: 'not an input' })\n",
+    "import greetingTemplate from './greeting.tplx'\ngreetingTemplate.format({ ignored: 'not an input' })\n",
   )
 
   assertCompilerFailure(projectDirPath, /ignored/)
@@ -66,7 +73,7 @@ format({ 'user.name': false })
 test.test('updates the required inputs when the template changes', async (testContext) => {
   const projectDirPath = await createProject(testContext, {
     'greeting.tplx': 'Hello {name}',
-    'index.ts': "import { format } from './greeting.tplx'\nformat({ name: 'Aaron' })\n",
+    'index.ts': "import greetingTemplate from './greeting.tplx'\ngreetingTemplate.format({ name: 'Aaron' })\n",
   })
 
   assertCompilerSuccess(projectDirPath)
@@ -105,13 +112,17 @@ tplx:
 <<name>> <<count>>`,
     'index.ts': `
 import * as assert from 'node:assert/strict'
-import { format as formatStrict } from './strict.tplx'
-import { format as formatOptional } from './optional.tplx'
+import strictTemplate from './strict.tplx'
+import optionalTemplate from './optional.tplx'
 
-assert.equal(formatStrict({ name: { toString: () => 'Aaron' }, count: 42 }), '<<not-used>> Hello Aaron! 42')
-assert.throws(() => formatStrict({ name: '', count: 42 }), /Missing input values/)
-assert.equal(formatOptional({ name: false, count: 0 }), ' ')
-assert.equal(formatOptional({}), ' ')
+const strictModule = await import('./strict.tplx')
+
+assert.deepEqual(Object.keys(strictModule), ['default'])
+assert.equal(strictModule.default, strictTemplate)
+assert.equal(strictTemplate.format({ name: { toString: () => 'Aaron' }, count: 42 }), '<<not-used>> Hello Aaron! 42')
+assert.throws(() => strictTemplate.format({ name: '', count: 42 }), /Missing input values/)
+assert.equal(optionalTemplate.format({ name: false, count: 0 }), ' ')
+assert.equal(optionalTemplate.format({}), ' ')
 `,
   })
 
@@ -127,7 +138,7 @@ assert.equal(formatOptional({}), ' ')
 test.test('emits declarations but leaves template assets to the runtime', async (testContext) => {
   const projectDirPath = await createProject(testContext, {
     'greeting.tplx': 'Hello {name}',
-    'index.ts': "import { format } from './greeting.tplx'\nexport const greeting = format({ name: 'Aaron' })\n",
+    'index.ts': "import greetingTemplate from './greeting.tplx'\nexport const greeting = greetingTemplate.format({ name: 'Aaron' })\n",
   })
 
   const compilerResult = runCompiler(projectDirPath, [
@@ -147,6 +158,9 @@ test.test('emits declarations but leaves template assets to the runtime', async 
   )
 
   assert.match(declarationFileContent, /name.*unknown/)
+  assert.match(declarationFileContent, /format\(values:/)
+  assert.match(declarationFileContent, /export default template/)
+  assert.doesNotMatch(declarationFileContent, /export declare function format/)
 })
 
 function runCompiler(projectDirPath, argumentsExtra = []) {

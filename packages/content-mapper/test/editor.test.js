@@ -12,7 +12,7 @@ import { compilerFilePath, createProject } from './create-project.js'
 test.test('offers input completion and refreshes unsaved template content', { timeout: 15000 }, async (testContext) => {
   const projectDirPath = await createProject(testContext, {
     'greeting.tplx': 'Hello {name}',
-    'index.ts': "import { format } from './greeting.tplx'\nformat({ })\n",
+    'index.ts': "import greetingTemplate from './greeting.tplx'\ngreetingTemplate.format({ })\n",
   })
 
   const compilerProcess = childProcess.spawn(
@@ -62,13 +62,13 @@ test.test('offers input completion and refreshes unsaved template content', { ti
       uri: importerUri,
       languageId: 'typescript',
       version: 1,
-      text: "import { format } from './greeting.tplx'\nformat({ })\n",
+      text: "import greetingTemplate from './greeting.tplx'\ngreetingTemplate.format({ })\n",
     },
   })
 
   const completionParameters = {
     textDocument: { uri: importerUri },
-    position: { line: 1, character: 9 },
+    position: { line: 1, character: 26 },
   }
 
   const firstCompletion = await messageConnection.sendRequest(

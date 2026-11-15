@@ -8,17 +8,22 @@ export function buildTemplateDeclaration(templateFileContent) {
   const inputOptionality = template.options.strict === false ? '?' : ''
 
   const inputProperties = inputs.map(
-    (input) => `  ${JSON.stringify(input)}${inputOptionality}: unknown`,
+    (input) => `    ${JSON.stringify(input)}${inputOptionality}: unknown`,
   )
 
   const valuesType = inputs.length
     ? `{
 ${inputProperties.join('\n')}
-}`
+  }`
     : 'Record<string, unknown>'
 
   return {
-    text: `export declare function format(values: ${valuesType}): string\n`,
+    text: `declare const template: {
+  format(values: ${valuesType}): string
+}
+
+export default template
+`,
     extension: '.ts',
     mappings: [],
   }

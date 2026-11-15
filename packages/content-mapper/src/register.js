@@ -25,8 +25,10 @@ function loadTemplateModule(moduleUrl, context, nextLoad) {
       `import { format as formatTemplate } from ${JSON.stringify(coreModuleUrl)}`,
       `const templateContent = ${JSON.stringify(template.content)}`,
       `const templateOptions = ${JSON.stringify(template.options)}`,
-      'export function format(values) {',
-      '  return formatTemplate(templateContent, values, templateOptions)',
+      'export default {',
+      '  format(values) {',
+      '    return formatTemplate(templateContent, values, templateOptions)',
+      '  },',
       '}',
     ].join('\n'),
   }
