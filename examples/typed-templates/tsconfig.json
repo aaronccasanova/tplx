@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "strict": true,
+    "noEmit": true,
+    "types": []
+  },
+  "contentMappers": [
+    {
+      "package": "@tplx/content-mapper",
+      "extensions": [".tplx"]
+    }
+  ],
+  "include": ["*.ts", "*.tplx"]
+}

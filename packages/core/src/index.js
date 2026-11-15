@@ -132,14 +132,9 @@ function getTemplateOptions(templateData, options = {}) {
 }
 
 /**
- * @type {import('./index.d.ts').read}
+ * @type {import('./index.d.ts').parseTemplate}
  */
-export async function read(templateFileName, options) {
-  const templateFileContent = await fs.promises.readFile(
-    templateFileName,
-    'utf8',
-  )
-
+export function parseTemplate(templateFileContent, options) {
   const { content: templateContent, data: templateData } =
     matter(templateFileContent)
 
@@ -155,21 +150,22 @@ export async function read(templateFileName, options) {
 }
 
 /**
+ * @type {import('./index.d.ts').read}
+ */
+export async function read(templateFileName, options) {
+  const templateFileContent = await fs.promises.readFile(
+    templateFileName,
+    'utf8',
+  )
+
+  return parseTemplate(templateFileContent, options)
+}
+
+/**
  * @type {import('./index.d.ts').readSync}
  */
 export function readSync(templateFileName, options) {
   const templateFileContent = fs.readFileSync(templateFileName, 'utf8')
 
-  const { content: templateContent, data: templateData } =
-    matter(templateFileContent)
-
-  const templateOptions = getTemplateOptions(templateData, options)
-
-  const inputs = getInputs(templateContent, templateOptions.delimiters)
-
-  return {
-    content: templateContent,
-    inputs,
-    options: templateOptions,
-  }
+  return parseTemplate(templateFileContent, options)
 }

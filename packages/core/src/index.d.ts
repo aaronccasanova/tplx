@@ -33,6 +33,11 @@ export declare function getInputs(
   delimiters?: Delimiters,
 ): Inputs
 
+export declare function parseTemplate(
+  templateFileContent: string,
+  options?: Options,
+): Template
+
 export declare function read(
   templateFileName: string,
   options?: Options,

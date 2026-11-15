@@ -5,6 +5,11 @@
   "type": "module",
   "scripts": {
     "tplx": "node packages/tplx/bin/index.js",
-    "test": "pnpm -r test"
+    "test": "pnpm -r test",
+    "test:typed-example": "tsc --project examples/typed-templates --runExternalCode && node --import @tplx/content-mapper/register examples/typed-templates/index.ts"
+  },
+  "devDependencies": {
+    "@tplx/content-mapper": "workspace:*",
+    "typescript": "7.1.0-beta"
   }
 }

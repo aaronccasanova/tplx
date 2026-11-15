@@ -45,6 +45,21 @@ MCP server that automatically exposes `tplx` templates as MCP prompts.
 npx @tplx/mcp --template 'templates/**/*.md'
 ```
 
+### [`@tplx/content-mapper`](./packages/content-mapper)
+
+Experimental TypeScript 7.1 integration for imported `.tplx` templates. Each template exports a `format(values)` function whose input names come directly from its contents and frontmatter. A Node loading hook supplies the runtime import behavior.
+
+```ts
+import { format as formatCodeReview } from './code-review.tplx'
+
+const formattedCodeReview = formatCodeReview({
+  language: 'JavaScript',
+  code: 'const greeting = "Hello"',
+})
+```
+
+See the [setup, guarantees, and runtime requirements](./packages/content-mapper/README.md), or run `pnpm test:typed-example` after installing this workspace's dependencies. The current implementation targets TypeScript `7.1.0-beta` and Node.js 22.18 or newer.
+
 ## Quick Start
 
 ```bash
@@ -117,3 +132,7 @@ Reads a template file, parses front matter, and returns an object containing the
 ### `readSync(templateFileName)`
 
 A synchronous version of `read`.
+
+### `parseTemplate(templateFileContent, options)`
+
+Parses template source with the same frontmatter, option overrides, and placeholder discovery as `read`, without reading a file.
