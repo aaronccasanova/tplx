@@ -1,6 +1,6 @@
 {
   "name": "@tplx/core",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Core template parsing and formatting logic for tplx",
   "type": "module",
   "main": "src/index.js",

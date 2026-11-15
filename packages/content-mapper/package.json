@@ -1,0 +1,30 @@
+{
+  "name": "@tplx/content-mapper",
+  "version": "0.0.1",
+  "description": "TypeScript content mapper and Node.js loader for tplx templates",
+  "type": "module",
+  "exports": {
+    "./register": "./src/register.js"
+  },
+  "files": [
+    "src"
+  ],
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "typescript": {
+    "contentMapper": {
+      "exec": ["node", "src/run-mapper.js"]
+    }
+  },
+  "dependencies": {
+    "@tplx/core": "workspace:^",
+    "vscode-jsonrpc": "^8.2.1"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

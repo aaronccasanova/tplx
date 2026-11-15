@@ -1,0 +1,9 @@
+---
+tplx:
+  delimiters:
+    open: '<<'
+    close: '>>'
+---
+Review this <<language>> code:
+
+<<code>>

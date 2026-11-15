@@ -1,8 +1,9 @@
+import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { describe, it } from 'node:test'
 import assert, { strict } from 'node:assert'
 
-import { getInputs, format, read, readSync } from '../src/index.js'
+import { getInputs, format, parseTemplate, read, readSync } from '../src/index.js'
 
 const templatesDirPath = path.join(import.meta.dirname, './templates')
 
@@ -59,6 +60,35 @@ describe('format', () => {
     const options = { strict: true }
     const result = format(templateContent, values, options)
     assert.strictEqual(result, 'Hello, world!')
+  })
+
+  it('treats falsy values as missing by default and blanks them when non-strict', () => {
+    const templateContent = '{empty}|{zero}|{false}|{null}|{undefined}|{absent}'
+    const values = {
+      empty: '',
+      zero: 0,
+      false: false,
+      null: null,
+      undefined: undefined,
+    }
+
+    assert.throws(
+      () => format(templateContent, values),
+      new Error(
+        "Missing input values for: 'empty', 'zero', 'false', 'null', 'undefined', 'absent'",
+      ),
+    )
+    assert.strictEqual(
+      format(templateContent, values, { strict: false }),
+      '|||||',
+    )
+  })
+
+  it('stringifies truthy numbers and objects', () => {
+    assert.strictEqual(
+      format('{number} {object}', { number: 42, object: { name: 'value' } }),
+      '42 [object Object]',
+    )
   })
 
   it('should work with custom delimiters', () => {
@@ -128,6 +158,55 @@ describe('getInputs', () => {
     const templateContent = 'Hello, {  name  }!'
     const result = getInputs(templateContent)
     assert.deepStrictEqual(result, ['name'])
+  })
+})
+
+describe('parseTemplate', () => {
+  it('matches both file readers with front matter and overrides', async () => {
+    const templateFilePath = path.join(templatesDirPath, 'override.md')
+    const templateFileContent = fs.readFileSync(templateFilePath, 'utf8')
+    const options = {
+      title: 'Override title',
+      description: 'Override description',
+      strict: false,
+      delimiters: { open: '{{', close: '}}' },
+    }
+    const template = parseTemplate(templateFileContent, options)
+
+    assert.deepStrictEqual(template, await read(templateFilePath, options))
+    assert.deepStrictEqual(template, readSync(templateFilePath, options))
+    assert.deepStrictEqual(template.options, options)
+  })
+
+  it('preserves front matter, duplicate inputs, and flat placeholder keys', () => {
+    const templateFileContent = `---
+title: Top title
+description: Top description
+tplx:
+  title: Nested title
+  delimiters:
+    open: '<<'
+    close: '>>'
+  strict: false
+---
+<<user.name>> <<user.name>>`
+
+    assert.deepStrictEqual(parseTemplate(templateFileContent), {
+      content: '<<user.name>> <<user.name>>',
+      inputs: ['user.name', 'user.name'],
+      options: {
+        title: 'Nested title',
+        description: 'Top description',
+        strict: false,
+        delimiters: { open: '<<', close: '>>' },
+      },
+    })
+    assert.strictEqual(
+      format('<<user.name>>', { 'user.name': 'Aaron' }, {
+        delimiters: { open: '<<', close: '>>' },
+      }),
+      'Aaron',
+    )
   })
 })
 

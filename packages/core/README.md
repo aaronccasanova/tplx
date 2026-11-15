@@ -82,7 +82,7 @@ tplx:
 Hello, <<name>>!
 ```
 
-When using `read()` or `readSync()`, the front matter is automatically parsed and options are extracted.
+When using `parseTemplate()`, `read()`, or `readSync()`, the front matter is automatically parsed and options are extracted.
 
 ## API
 
@@ -96,7 +96,7 @@ Formats a template string with the provided values.
 - `values` (object): Object containing values for template placeholders
 - `options` (object, optional):
   - `delimiters` (object): Custom delimiters with `open` and `close` properties (default: `{ open: '{', close: '}' }`)
-  - `strict` (boolean): Whether to throw an error on missing values (default: `false`)
+  - `strict` (boolean): Whether to throw an error on missing values (default: `true`)
 
 **Returns:** String with placeholders replaced by values
 
@@ -125,7 +125,7 @@ Extracts input placeholder names from a template string.
 - `templateContent` (string): The template string to parse
 - `delimiters` (object, optional): Custom delimiters with `open` and `close` properties (default: `{ open: '{', close: '}' }`)
 
-**Returns:** Array of unique placeholder names
+**Returns:** Array of placeholder names in order, including duplicates
 
 **Example:**
 
@@ -135,6 +135,22 @@ tplx.getInputs('Hello, {name}! Welcome to {location}.')
 
 tplx.getInputs('Hello, <<name>>!', { open: '<<', close: '>>' })
 // ['name']
+```
+
+### `parseTemplate(templateFileContent, options)`
+
+Parses template source, including front matter, without reading a file. Options override front matter as with `read()`.
+
+**Parameters:**
+
+- `templateFileContent` (string): Template source, including optional front matter
+- `options` (object, optional): Same options as `read()`
+
+**Returns:** A template object with `content`, `inputs`, and merged `options`.
+
+```javascript
+const template = tplx.parseTemplate('Hello, {name}!')
+console.log(template.inputs) // ['name']
 ```
 
 ### `read(templateFileName, options)`
@@ -162,7 +178,7 @@ Asynchronously reads and parses a template file, extracting content, inputs, and
 const template = await tplx.read('greeting.md')
 console.log(template.content) // "Hello, {name}!"
 console.log(template.inputs) // ['name']
-console.log(template.options) // { delimiters: { open: '{', close: '}' } }
+console.log(template.options) // {}
 ```
 
 ### `readSync(templateFileName, options)`
